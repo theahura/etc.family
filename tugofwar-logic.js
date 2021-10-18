@@ -1,4 +1,4 @@
-// Initialize Firebase
+// Initialize Firebase. Ignore this config stuff.
 const config = {
   apiKey: 'AIzaSyCgPq9lDCdVTgut6rUQwm2JDYRYSfyEezY',
   authDomain: 'etc-clock-916a3.firebaseapp.com',
@@ -12,22 +12,7 @@ const config = {
 firebase.initializeApp(config);
 const database = firebase.database();
 
-//Listener
-let currentTimerId = null;
-let listOfResets = [];
-
-const updateResets = (resetList) => {
-  if (!resetList) return;
-
-  const ul = document.getElementById('PreviousResets');
-  ul.innerHTML = '';
-  for (const reset of resetList) {
-    const li = document.createElement('li');
-    li.innerText = reset;
-    ul.appendChild(li);
-  }
-};
-
+// Whenever there is a new value from the server, update the numbers on screen.
 database.ref().on('value', function (snapshot) {
   const teamOneCount = snapshot.val().teamOneCount
     ? snapshot.val().teamOneCount
@@ -40,14 +25,17 @@ database.ref().on('value', function (snapshot) {
   document.getElementById('TeamTwoCount').innerHTML = 'Count: ' + teamTwoCount;
 });
 
+// When there is a click from the teamone button, send a message to the server.
 $('#TeamOneButton').on('click', function () {
   database.ref('teamOneCount').set(firebase.database.ServerValue.increment(1));
 });
 
+// Ditto on the teamtwo button.
 $('#TeamTwoButton').on('click', function () {
   database.ref('teamTwoCount').set(firebase.database.ServerValue.increment(1));
 });
 
+// Reset. Self explanatory.
 $('#Reset').on('click', function () {
   database.ref('teamOneCount').set(0);
   database.ref('teamTwoCount').set(0);
