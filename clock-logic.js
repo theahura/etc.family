@@ -13,19 +13,29 @@ const config = {
 firebase.initializeApp(config);
 const database = firebase.database();
 
-//Listener
+// Core logic. Increase clock by one second in a settimeout. Track previous
+// resets. Update reset counts on click.
+//
+// All state is global. Mostly we just care about the resets and the charts.
 let currentTimerId = null;
-let listOfResets = [];
+let listOfResets = []; // Strings of format {data: count}
+let charts = []; // [Chart.js charts, config gen fn]
 
-const updateResets = (resetList) => {
-  if (!resetList) return;
+const updateDom = () => {
+  if (!listOfResets) return;
 
   const ul = document.getElementById('PreviousResets');
   ul.innerHTML = '';
-  for (const reset of resetList) {
+  for (const reset of listOfResets) {
     const li = document.createElement('li');
     li.innerText = reset;
     ul.appendChild(li);
+  }
+
+  for (const [chart, configGen] of charts) {
+    const config = configGen();
+    chart.data = config.data;
+    chart.update('none');
   }
 };
 
@@ -34,7 +44,7 @@ database.ref().on('value', function (snapshot) {
   listOfResets = snapshot.val().resetList;
 
   console.log('Got timestamp: ', stamp);
-  updateResets(listOfResets);
+  clearInterval(currentTimerId);
 
   // Update the count down every 1 second
   currentTimerId = setInterval(function () {
@@ -53,11 +63,8 @@ database.ref().on('value', function (snapshot) {
     document.getElementById('Time').innerHTML =
       days + 'd ' + hours + 'h ' + minutes + 'm ' + seconds + 's ';
 
-    // If the count down is finished, write some text
-    if (distance < 0) {
-      clearInterval(currentTimerId);
-      document.getElementById('Time').innerHTML = 'EXPIRED';
-    }
+    // Update the dom given the new list of resets.
+    updateDom();
   }, 1000);
 });
 
@@ -74,3 +81,34 @@ $('#Reset').on('click', function () {
     resetList: listOfResets,
   });
 });
+
+// Over time chart logic.
+const getOverTimeConfig = () => {
+  return {
+    type: 'line',
+    data: {
+      labels: listOfResets.map((str) =>
+        Date.parse(str.substring(0, str.lastIndexOf(':'))),
+      ),
+      datasets: [
+        {
+          label: 'Resets Over Time',
+          data: listOfResets.map((str, i) => listOfResets.length - i),
+        },
+      ],
+    },
+    options: {
+      scales: {
+        x: {
+          type: 'time',
+          time: {
+            unit: 'hour',
+          },
+        },
+      },
+    },
+  };
+};
+
+const ctx = document.getElementById('rateOverTime').getContext('2d');
+charts.push([new Chart(ctx, getOverTimeConfig()), getOverTimeConfig]);
