@@ -1,13 +1,12 @@
 // Initialize Firebase
 const config = {
-  apiKey: 'AIzaSyDY__Yde45aRb0xNKxPdPLvpoKBf-Lhc0g',
-  authDomain: 'etc-clock-2.firebaseapp.com',
-  databaseURL: 'https://etc-clock-2-default-rtdb.firebaseio.com',
-  projectId: 'etc-clock-2',
-  storageBucket: 'etc-clock-2.appspot.com',
-  messagingSenderId: '131379690038',
-  appId: '1:131379690038:web:c2d180c02832b05370f697',
-  measurementId: 'G-SLQD9MFGKJ',
+  apiKey: 'AIzaSyCgPq9lDCdVTgut6rUQwm2JDYRYSfyEezY',
+  authDomain: 'etc-clock-916a3.firebaseapp.com',
+  databaseURL: 'https://etc-clock-916a3-default-rtdb.firebaseio.com/',
+  projectId: 'etc-clock-916a3',
+  storageBucket: 'etc-clock-916a3.appspot.com',
+  messagingSenderId: '550414492244',
+  appId: '1:550414492244:web:86dfe88c3ad0df44bf43c1',
 };
 
 firebase.initializeApp(config);
@@ -34,12 +33,13 @@ database.ref().on('value', function (snapshot) {
   listOfResets = snapshot.val().resetList;
 
   console.log('Got timestamp: ', stamp);
+  const countDownDate = new Date(stamp + 6.048e8).getTime();
   updateResets(listOfResets);
 
   // Update the count down every 1 second
   currentTimerId = setInterval(function () {
     // Find the distance between now and the count down date
-    const distance = new Date().getTime() - stamp;
+    const distance = countDownDate - new Date().getTime();
 
     // Time calculations for days, hours, minutes and seconds
     const days = Math.floor(distance / (1000 * 60 * 60 * 24));
