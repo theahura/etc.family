@@ -102,7 +102,7 @@ const getOverTimeConfig = () => {
         x: {
           type: 'time',
           time: {
-            unit: 'hour',
+            unit: 'day',
           },
         },
       },
